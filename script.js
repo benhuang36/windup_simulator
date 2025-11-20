@@ -134,6 +134,7 @@ function createWindow(key) {
   windowEl.dataset.state = 'normal';
 
   makeDraggable(windowEl);
+  makeResizable(windowEl);
 
   const closeBtn = windowEl.querySelector('.btn-close');
   const minimizeBtn = windowEl.querySelector('.btn-minimize');
@@ -170,7 +171,15 @@ function closeWindow(windowEl) {
 }
 
 function minimizeWindow(windowEl) {
-  windowEl.style.display = 'none';
+  windowEl.classList.remove('restoring');
+  const finishMinimize = () => {
+    windowEl.style.display = 'none';
+    windowEl.classList.remove('minimizing');
+    windowEl.dataset.state = 'minimized';
+  };
+  if (windowEl.style.display === 'none') return;
+  windowEl.addEventListener('animationend', finishMinimize, { once: true });
+  windowEl.classList.add('minimizing');
   const key = windowEl.dataset.windowKey;
   const btn = taskButtons.querySelector(`[data-window-key="${key}"]`);
   if (btn) btn.classList.remove('active');
@@ -179,18 +188,21 @@ function minimizeWindow(windowEl) {
 function toggleMaximize(windowEl) {
   const state = windowEl.dataset.state;
   if (state === 'normal') {
-    windowEl.dataset.previous = `${windowEl.style.left},${windowEl.style.top},${windowEl.style.width}`;
+    const computed = getComputedStyle(windowEl);
+    windowEl.dataset.previous = `${windowEl.style.left || computed.left},${windowEl.style.top || computed.top},${
+      windowEl.style.width || computed.width
+    },${windowEl.style.height || computed.height}`;
     windowEl.style.left = '8px';
     windowEl.style.top = '8px';
     windowEl.style.width = 'calc(100% - 16px)';
     windowEl.style.height = 'calc(100% - 64px)';
     windowEl.dataset.state = 'maximized';
   } else {
-    const [left, top, width] = windowEl.dataset.previous.split(',');
+    const [left, top, width, height] = windowEl.dataset.previous.split(',');
     windowEl.style.left = left;
     windowEl.style.top = top;
     windowEl.style.width = width || '420px';
-    windowEl.style.height = '';
+    windowEl.style.height = height || 'auto';
     windowEl.dataset.state = 'normal';
   }
 }
@@ -199,6 +211,16 @@ function restoreWindow(key) {
   const windowEl = windowArea.querySelector(`[data-window-key="${key}"]`);
   if (windowEl) {
     windowEl.style.display = 'block';
+    windowEl.dataset.state = 'normal';
+    windowEl.classList.remove('minimizing');
+    windowEl.classList.add('restoring');
+    windowEl.addEventListener(
+      'animationend',
+      () => {
+        windowEl.classList.remove('restoring');
+      },
+      { once: true }
+    );
     focusWindow(windowEl);
     return windowEl;
   }
@@ -245,6 +267,67 @@ function makeDraggable(windowEl) {
   });
 }
 
+function makeResizable(windowEl) {
+  const directions = ['n', 'e', 's', 'w', 'ne', 'nw', 'se', 'sw'];
+  const minWidth = 320;
+  const minHeight = 200;
+
+  directions.forEach((dir) => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle ${dir}`;
+    windowEl.appendChild(handle);
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startWidth = windowEl.offsetWidth;
+      const startHeight = windowEl.offsetHeight;
+      const startLeft = windowEl.offsetLeft;
+      const startTop = windowEl.offsetTop;
+
+      const onMove = (moveEvent) => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        if (dir.includes('e')) {
+          newWidth = Math.max(minWidth, startWidth + deltaX);
+        }
+        if (dir.includes('s')) {
+          newHeight = Math.max(minHeight, startHeight + deltaY);
+        }
+        if (dir.includes('w')) {
+          newWidth = Math.max(minWidth, startWidth - deltaX);
+          newLeft = startLeft + deltaX;
+        }
+        if (dir.includes('n')) {
+          newHeight = Math.max(minHeight, startHeight - deltaY);
+          newTop = startTop + deltaY;
+        }
+
+        windowEl.style.width = `${newWidth}px`;
+        windowEl.style.height = `${newHeight}px`;
+        windowEl.style.left = `${newLeft}px`;
+        windowEl.style.top = `${newTop}px`;
+      };
+
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
 function toggleStartMenu() {
   const isVisible = startMenu.classList.toggle('visible');
   startButton.setAttribute('aria-expanded', isVisible);
@@ -271,6 +354,10 @@ function arrangeIcons() {
 
 function bindInteractions() {
   document.querySelectorAll('.icon').forEach((icon) => {
+    icon.addEventListener('click', () => {
+      document.querySelectorAll('.icon').forEach((ic) => ic.classList.remove('selected'));
+      icon.classList.add('selected');
+    });
     icon.addEventListener('dblclick', () => restoreWindow(icon.dataset.window));
   });
 
@@ -289,7 +376,7 @@ function bindInteractions() {
   startButton.addEventListener('click', toggleStartMenu);
 
   document.addEventListener('click', (e) => {
-    if (!startMenu.contains(e.target) && e.target !== startButton) {
+    if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
       startMenu.classList.remove('visible');
       startButton.setAttribute('aria-expanded', false);
       startMenu.setAttribute('aria-hidden', true);
