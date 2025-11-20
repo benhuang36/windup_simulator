@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows XP Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="desktop" class="desktop" tabindex="0">
+    <div id="icon-computer" class="icon" data-window="computer" role="button" aria-label="My Computer">
+      <div class="icon-image icon-computer"></div>
+      <span>My Computer</span>
+    </div>
+    <div id="icon-documents" class="icon" data-window="documents" role="button" aria-label="My Documents">
+      <div class="icon-image icon-documents"></div>
+      <span>My Documents</span>
+    </div>
+    <div id="icon-browser" class="icon" data-window="browser" role="button" aria-label="Internet Explorer">
+      <div class="icon-image icon-browser"></div>
+      <span>Internet Explorer</span>
+    </div>
+    <div id="icon-notepad" class="icon" data-window="notepad" role="button" aria-label="Notepad">
+      <div class="icon-image icon-notepad"></div>
+      <span>Notepad</span>
+    </div>
+    <div id="icon-recycle" class="icon" data-window="recycle" role="button" aria-label="Recycle Bin">
+      <div class="icon-image icon-recycle"></div>
+      <span>Recycle Bin</span>
+    </div>
+    <div id="window-area"></div>
+  </div>
+
+  <div class="taskbar">
+    <button id="start-button" class="start-button" aria-haspopup="true" aria-expanded="false">
+      <span class="start-orb"></span>
+      <span class="start-text">start</span>
+    </button>
+    <div id="task-buttons" class="task-buttons" role="tablist"></div>
+    <div class="tray">
+      <div class="tray-icons">
+        <span class="tray-icon sound" aria-hidden="true"></span>
+        <span class="tray-icon network" aria-hidden="true"></span>
+      </div>
+      <div id="clock" aria-label="Clock">12:00</div>
+    </div>
+  </div>
+
+  <div id="start-menu" class="start-menu" role="menu" aria-hidden="true">
+    <div class="start-header">
+      <div class="user-avatar">XP</div>
+      <div class="user-info">
+        <div class="user-name">Windows XP</div>
+        <div class="user-status">Logged on</div>
+      </div>
+    </div>
+    <div class="start-body">
+      <div class="start-left">
+        <button class="menu-item" data-window="browser" role="menuitem">
+          <span class="menu-icon icon-browser"></span>
+          Internet Explorer
+        </button>
+        <button class="menu-item" data-window="documents" role="menuitem">
+          <span class="menu-icon icon-documents"></span>
+          My Documents
+        </button>
+        <button class="menu-item" data-window="pictures" role="menuitem">
+          <span class="menu-icon icon-pictures"></span>
+          My Pictures
+        </button>
+        <button class="menu-item" data-window="music" role="menuitem">
+          <span class="menu-icon icon-music"></span>
+          My Music
+        </button>
+        <button class="menu-item" data-window="notepad" role="menuitem">
+          <span class="menu-icon icon-notepad"></span>
+          Notepad
+        </button>
+      </div>
+      <div class="start-right">
+        <button class="menu-item" data-window="control" role="menuitem">
+          <span class="menu-icon icon-control"></span>
+          Control Panel
+        </button>
+        <button class="menu-item" data-window="help" role="menuitem">
+          <span class="menu-icon icon-help"></span>
+          Help and Support
+        </button>
+        <button class="menu-item" data-window="search" role="menuitem">
+          <span class="menu-icon icon-search"></span>
+          Search
+        </button>
+        <button class="menu-item" data-window="run" role="menuitem">
+          <span class="menu-icon icon-run"></span>
+          Run...
+        </button>
+      </div>
+    </div>
+    <div class="start-footer">
+      <button id="log-off" class="menu-item" role="menuitem">
+        <span class="menu-icon icon-logoff"></span>
+        Log Off
+      </button>
+      <button id="turn-off" class="menu-item" role="menuitem">
+        <span class="menu-icon icon-shutdown"></span>
+        Turn Off Computer
+      </button>
+    </div>
+  </div>
+
+  <template id="window-template">
+    <div class="window" role="dialog" aria-modal="false">
+      <div class="title-bar">
+        <span class="title-text"></span>
+        <div class="title-buttons">
+          <button class="btn-minimize" aria-label="Minimize">&#9472;</button>
+          <button class="btn-maximize" aria-label="Maximize">&#9723;</button>
+          <button class="btn-close" aria-label="Close">&#10006;</button>
+        </div>
+      </div>
+      <div class="window-content"></div>
+    </div>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
